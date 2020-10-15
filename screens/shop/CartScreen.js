@@ -1,8 +1,11 @@
 import React from 'react'
-import { View, Text, FlatList, Button, StyleSheet } from 'react-native'
+import { View, Text, FlatList, Button, StyleSheet, useWindowDimensions } from 'react-native'
 import Colors from '../../constants/Colors'
 import CartItem from '../../components/shop/CartItem'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import * as cartActions from '../../store/actions/cart'
+import * as orderActions from '../../store/actions/orders'
+import orders from '../../store/reducers/orders'
 const CartScreen = props => {
     const cartTotalAmount = useSelector(state => state.cart.totalAmount)
     const cartItems = useSelector(state => {
@@ -16,33 +19,43 @@ const CartScreen = props => {
                 sum: state.cart.items[key].sum
             })
         }
-        return transformedCartItems
+        return transformedCartItems.sort((a, b) => a.productId > b.productId ? 1 : -1)
     })
 
+    const dispatch = useDispatch()
     return <View style={styles.screen}>
         <View style={styles.summary}>
             <Text style={styles.summaryText}>
                 Total: <Text style={styles.amount}>${cartTotalAmount.toFixed(2)}</Text>
             </Text>
-            <Button color={Colors.accent} title="Order Now" disabled={cartItems.length === 0} />
+            <Button
+                color={Colors.accent}
+                title="Order Now"
+                disabled={cartItems.length === 0}
+                onPress={() => {
+                    dispatch(orderActions.addOrder(cartItems, cartTotalAmount))
+                }}
+            />
         </View>
         <FlatList
             data={cartItems}
             keyExtractor={item => item.productId}
-            renderItem={itemData => <CartItem 
+            renderItem={itemData => <CartItem
                 quantity={itemData.item.quantity}
                 amount={itemData.item.sum}
                 title={itemData.item.productTitle}
-                onRemove={()=>{}} />}
+                onRemove={() => { dispatch(cartActions.removeFromCart(itemData.item.productId)) }} />}
         />
     </View>
 }
-
+CartScreen.navigationOptions = {
+    headerTitle: 'Your Cart'
+}
 const styles = StyleSheet.create({
     screen: {
         margin: 20
-      },
-      summary: {
+    },
+    summary: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -55,14 +68,14 @@ const styles = StyleSheet.create({
         elevation: 5,
         borderRadius: 10,
         backgroundColor: 'white'
-      },
-      summaryText: {
+    },
+    summaryText: {
         fontFamily: 'open-sans-bold',
         fontSize: 18
-      },
-      amount: {
+    },
+    amount: {
         color: Colors.primary
-      }
+    }
 })
 
 export default CartScreen
