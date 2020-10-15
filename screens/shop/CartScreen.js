@@ -5,7 +5,7 @@ import CartItem from '../../components/shop/CartItem'
 import { useSelector, useDispatch } from 'react-redux'
 import * as cartActions from '../../store/actions/cart'
 import * as orderActions from '../../store/actions/orders'
-import orders from '../../store/reducers/orders'
+
 const CartScreen = props => {
     const cartTotalAmount = useSelector(state => state.cart.totalAmount)
     const cartItems = useSelector(state => {
@@ -26,7 +26,7 @@ const CartScreen = props => {
     return <View style={styles.screen}>
         <View style={styles.summary}>
             <Text style={styles.summaryText}>
-                Total: <Text style={styles.amount}>${cartTotalAmount.toFixed(2)}</Text>
+                Total: <Text style={styles.amount}>${Math.round(cartTotalAmount.toFixed(2) * 100) / 100}</Text>
             </Text>
             <Button
                 color={Colors.accent}
